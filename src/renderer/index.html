@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data: blob: https:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Inkdown</title>
+  <link rel="stylesheet" href="styles.css">
+  <style id="userStyle"></style>
+</head>
+<body>
+  <nav id="appMenuBar" class="app-menu-bar" role="menubar" aria-label="应用菜单"></nav>
+  <div id="app">
+    <aside id="sidebar" aria-label="文档侧栏">
+      <header class="sidebar-title">
+        <div class="brand"><span id="folderName">工作区</span></div>
+        <div class="sidebar-title-actions">
+          <button id="collapseSidebarBtn" class="glyph" title="收起侧栏">‹</button>
+        </div>
+      </header>
+      <nav class="sidebar-modes" aria-label="侧栏视图">
+        <button data-sidebar-mode="files" class="active" title="文件树 Ctrl+Shift+3">文件</button>
+        <button data-sidebar-mode="outline" title="大纲 Ctrl+Shift+1">大纲</button>
+        <button data-sidebar-mode="search" title="全局搜索 Ctrl+Shift+F">搜索</button>
+      </nav>
+      <section id="filesPane" class="sidebar-pane">
+        <div class="side-search-wrap"><input id="fileFilter" class="side-search" placeholder="筛选文件" autocomplete="off"></div>
+        <div id="fileTree" class="file-tree" tabindex="0"><div class="empty-side">打开文件夹，在这里管理 Markdown 文档。</div></div>
+        <footer class="sidebar-footer">
+          <button id="openFolderSideBtn">打开文件夹</button>
+          <button id="createFileBtn" title="在当前文件夹中新建">＋</button>
+        </footer>
+      </section>
+      <section id="outlinePane" class="sidebar-pane hidden">
+        <div id="outline" class="outline"><div class="empty-side">当前文档还没有标题。</div></div>
+      </section>
+      <section id="searchPane" class="sidebar-pane hidden">
+        <div class="side-search-wrap global-search-controls"><input id="globalSearchInput" class="side-search" placeholder="搜索当前文件夹" aria-label="搜索当前文件夹" autocomplete="off"><button id="globalSearchClear" title="清空搜索" aria-label="清空搜索">×</button></div>
+        <div class="search-hint">搜索已保存的文件 · 点击结果定位到源码</div>
+        <div id="globalSearchSummary" class="search-summary" role="status" aria-live="polite"></div>
+        <div id="globalSearchResults" class="global-results" aria-label="搜索结果"><div class="empty-side">输入关键词搜索所有文档。</div></div>
+      </section>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button id="showSidebarBtn" class="glyph sidebar-reveal hidden" title="显示侧栏">☰</button>
+        <div id="tabs" class="tabs" role="tablist"></div>
+        <div class="top-actions">
+          <button id="newBtn" title="新建文档 Ctrl+N" aria-label="新建文档">新建</button>
+          <button id="sourceModeBtn" title="源码模式 Ctrl+/">源码</button>
+          <button id="moreBtn" class="glyph" title="更多">•••</button>
+        </div>
+      </header>
+
+      <section id="welcome" class="welcome">
+        <div class="welcome-card">
+          <div class="welcome-logo">I</div>
+          <h1>Inkdown</h1>
+          <p>专注写作，实时呈现 Markdown。</p>
+          <div class="welcome-actions">
+            <button id="welcomeNew" class="primary">新建文档</button>
+            <button id="welcomeOpen">打开文件</button>
+            <button id="welcomeFolder">打开文件夹</button>
+          </div>
+          <div class="recent-block">
+            <div class="recent-title">最近打开</div>
+            <div id="recentFiles" class="recent-files"></div>
+          </div>
+        </div>
+      </section>
+
+      <div id="findbar" class="findbar hidden">
+        <input id="findInput" placeholder="查找" autocomplete="off">
+        <input id="replaceInput" class="hidden" placeholder="替换为" autocomplete="off">
+        <span id="findCount" class="find-count">0/0</span>
+        <button id="findPrev" title="上一个">↑</button>
+        <button id="findNext" title="下一个">↓</button>
+        <button id="replaceBtn" class="hidden">替换</button>
+        <button id="replaceAllBtn" class="hidden">全部</button>
+        <button id="findClose" title="关闭">×</button>
+      </div>
+
+      <div id="selectionToolbar" class="selection-toolbar hidden" role="toolbar">
+        <button data-action="paragraph">正文</button>
+        <button data-action="heading-1">H1</button>
+        <button data-action="heading-2">H2</button>
+        <span></span>
+        <button data-action="bold"><b>B</b></button>
+        <button data-action="italic"><i>I</i></button>
+        <button data-action="strike"><s>S</s></button>
+        <button data-action="inline-code">&lt;/&gt;</button>
+        <button data-action="link">链接</button>
+      </div>
+
+      <div id="tableToolbar" class="table-toolbar hidden" role="toolbar" aria-label="表格工具">
+        <button data-table-action="row-before" title="在上方插入行">上方行</button>
+        <button data-table-action="row-after" title="在下方插入行">下方行</button>
+        <button data-table-action="column-before" title="在左侧插入列">左侧列</button>
+        <button data-table-action="column-after" title="在右侧插入列">右侧列</button>
+        <span></span>
+        <button data-table-action="align-left" title="左对齐">左</button>
+        <button data-table-action="align-center" title="居中对齐">中</button>
+        <button data-table-action="align-right" title="右对齐">右</button>
+        <label class="table-size" title="正文行数"><input id="tableRows" type="number" min="1" max="100" value="1" aria-label="表格正文行数"> 行</label>
+        <span class="table-size-times">×</span>
+        <label class="table-size" title="列数"><input id="tableColumns" type="number" min="1" max="30" value="3" aria-label="表格列数"> 列</label>
+        <button data-table-action="resize" title="应用行列数">应用</button>
+        <span></span>
+        <button data-table-action="row-delete" title="删除当前行">删行</button>
+        <button data-table-action="column-delete" title="删除当前列">删列</button>
+      </div>
+
+      <section id="editorPane" class="editor-pane hidden">
+        <article id="wysiwyg" class="wysiwyg" contenteditable="true" spellcheck="true" aria-label="实时 Markdown 编辑器"></article>
+        <textarea id="sourceEditor" class="source-editor hidden" spellcheck="false" aria-label="Markdown 源码编辑器"></textarea>
+      </section>
+
+      <footer id="statusbar" class="statusbar hidden">
+        <div class="status-left">
+          <span id="saveState">已保存</span>
+          <button id="focusBtn" title="专注模式 F8">专注</button>
+        </div>
+        <div class="status-right">
+          <details id="documentStats" class="document-stats">
+            <summary id="statusStats" title="查看文档统计" aria-label="查看文档统计">0 字</summary>
+            <div class="stats-popover"><strong>文档统计</strong><div id="statusDetails"></div></div>
+          </details>
+        </div>
+      </footer>
+    </main>
+
+    <div id="palette" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="palette-card">
+        <input id="paletteInput" placeholder="输入文件名或命令" autocomplete="off">
+        <div id="paletteResults" class="palette-results"></div>
+        <div class="palette-help">↑↓ 选择　Enter 打开　Esc 关闭</div>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="settings-card">
+        <header><div><h2>偏好设置</h2><p id="versionLabel">Inkdown</p></div><button id="settingsClose" class="glyph">×</button></header>
+        <div class="settings-grid">
+          <label>主题<select id="settingTheme"><option value="system">跟随系统</option><option value="light">明亮</option><option value="dark">深色</option><option value="sepia">暖色</option></select></label>
+          <label>编辑字体<select id="settingFont"><option value="system">系统字体</option><option value="serif">衬线字体</option><option value="mono">等宽字体</option></select></label>
+          <label>字号 <output id="fontSizeOutput"></output><input id="settingFontSize" type="range" min="14" max="24" step="1"></label>
+          <label>行高 <output id="lineHeightOutput"></output><input id="settingLineHeight" type="range" min="1.4" max="2.2" step="0.05"></label>
+          <label>正文宽度 <output id="contentWidthOutput"></output><input id="settingContentWidth" type="range" min="640" max="1100" step="20"></label>
+          <label class="toggle-row"><span>拼写检查</span><input id="settingSpellcheck" type="checkbox"></label>
+          <label class="toggle-row"><span>显示状态栏</span><input id="settingStatusBar" type="checkbox"></label>
+          <label class="toggle-row"><span>显示浮动工具栏</span><input id="settingToolbar" type="checkbox"></label>
+          <label class="toggle-row"><span>恢复上次会话</span><input id="settingRestore" type="checkbox"></label>
+        </div>
+        <footer><button id="resetSettingsBtn">恢复默认</button><button id="settingsDone" class="primary">完成</button></footer>
+      </div>
+    </div>
+
+    <div id="contextMenu" class="context-menu hidden">
+      <button data-action="cut">剪切</button><button data-action="copy">复制</button><button data-action="paste">粘贴</button>
+      <span></span>
+      <button data-action="bold">粗体</button><button data-action="italic">斜体</button><button data-action="link">链接</button>
+      <span></span>
+      <button data-action="paragraph">正文</button><button data-action="heading-1">一级标题</button><button data-action="heading-2">二级标题</button>
+    </div>
+    <div id="moreMenu" class="context-menu more-menu hidden">
+      <button data-action="outline">显示大纲</button><button data-action="global-search">全局搜索</button><button data-action="focus-mode">专注模式</button>
+      <button data-action="open-user-style">打开 Markdown 样式配置</button><button data-action="reload-user-style">重新加载 Markdown 样式</button>
+      <span></span>
+      <button data-action="export-markdown">导出 Markdown</button><button data-action="export-text">导出纯文本</button>
+      <button data-action="export-html">导出 HTML</button><button data-action="export-pdf">导出 PDF</button><button data-action="export-docx">导出 Word</button>
+      <span></span><button data-action="settings">偏好设置</button>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+  </div>
+  <script src="../../node_modules/turndown/dist/turndown.js"></script>
+  <script src="../../node_modules/turndown-plugin-gfm/dist/turndown-plugin-gfm.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

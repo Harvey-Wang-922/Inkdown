@@ -1,0 +1,16 @@
+# Generated dependencies, artifacts and isolated test data (not deletion rules).
+/node_modules/
+/.pnpm-store/
+/release/
+/.build-backups/
+/.test-profiles/
+/.test-artifacts/
+/docs/ai/local/
+
+# Local credentials and signing material must not enter version control.
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key

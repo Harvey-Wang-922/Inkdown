@@ -1,0 +1,3 @@
+# Project-local Codex instruction budget. No model/provider or permission overrides.
+# The project must be trusted in the client for this layer to be loaded.
+project_doc_max_bytes = 65536

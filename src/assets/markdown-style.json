@@ -1,0 +1,7 @@
+{
+  "_说明": "此文件由安装后的 Inkdown 首次运行时复制到用户配置目录。无序和有序数组会按列表层级循环使用。",
+  "unorderedMarkers": ["●", "○", "■"],
+  "orderedStyles": ["decimal", "lower-alpha", "lower-roman"],
+  "headingPrefixes": ["", "", "", "", "", ""],
+  "quotePrefix": ""
+}

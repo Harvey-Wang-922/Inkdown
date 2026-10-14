@@ -1,0 +1,38 @@
+/* Inkdown 自定义样式
+ *
+ * 列表符号、编号循环和标题前缀优先在同目录的 markdown-style.json 中配置。
+ * 修改后，在 Inkdown 中选择“视图 → 重新加载 Markdown 样式”。
+ * 本文件只改变显示效果，不会修改 Markdown 源码。
+ * 本文件用于更高级的普通 CSS 覆盖。
+ */
+
+:root {
+  /* 无序列表 1～6 级 */
+  /* --inkdown-ul-marker-1: "●"; */
+  /* --inkdown-ul-marker-2: "○"; */
+  /* --inkdown-ul-marker-3: "■"; */
+  /* --inkdown-ul-marker-4: "🌿"; */
+  /* --inkdown-ul-marker-5: "◇"; */
+  /* --inkdown-ul-marker-6: "▪"; */
+
+  /* 有序列表 1～6 级。也可使用 upper-alpha、upper-roman 等 CSS 值。 */
+  /* --inkdown-ol-style-1: decimal; */
+  /* --inkdown-ol-style-2: lower-alpha; */
+  /* --inkdown-ol-style-3: lower-roman; */
+  /* --inkdown-ol-style-4: decimal; */
+  /* --inkdown-ol-style-5: lower-alpha; */
+  /* --inkdown-ol-style-6: lower-roman; */
+
+  /* Markdown 元素的显示前缀 */
+  /* --inkdown-h1-prefix: "📘 "; */
+  /* --inkdown-h2-prefix: "✦ "; */
+  /* --inkdown-h3-prefix: ""; */
+  /* --inkdown-h4-prefix: ""; */
+  /* --inkdown-h5-prefix: ""; */
+  /* --inkdown-h6-prefix: ""; */
+  /* --inkdown-quote-prefix: "💬 "; */
+}
+
+/* 这里也可以继续编写普通 CSS，例如：
+.wysiwyg strong::before { content: "⭐"; }
+*/

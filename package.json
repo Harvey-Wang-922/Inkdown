@@ -1,0 +1,87 @@
+{
+  "name": "inkdown",
+  "version": "1.0.0",
+  "description": "A clean, local-first Markdown desktop editor",
+  "main": "src/main.js",
+  "author": "Inkdown",
+  "license": "MIT",
+  "packageManager": "pnpm@11.16.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis",
+    "dist:signed": "electron-builder --win nsis --config.forceCodeSigning=true",
+    "test": "node tests/source-document-engine-test.mjs && node tests/file-source-preservation-test.cjs && node tests/renderer-core-models-test.mjs && node tests/architecture-boundaries-test.mjs && node tests/editor-projection-controller-test.mjs && node tests/session-recovery-coordinator-test.mjs && node tests/workspace-search-service-test.cjs && node tests/search-result-navigation-test.mjs && node tests/document-open-coordinator-test.mjs && node tests/export-security-test.cjs && node tests/project-contract-test.cjs"
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "mammoth": "1.13.0",
+    "marked": "^15.0.12",
+    "sanitize-html": "2.18.0",
+    "turndown": "^7.2.0",
+    "turndown-plugin-gfm": "^1.0.2"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.inkdown.editor",
+    "productName": "Inkdown",
+    "directories": {
+      "output": "release"
+    },
+    "artifactName": "Inkdown-${version}-Windows-Setup.${ext}",
+    "asar": true,
+    "electronLanguages": ["en-US", "zh-CN", "zh-TW"],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    },
+    "files": [
+      "src/**/*",
+      "!src/**/AGENTS.md",
+      "build/icon.png",
+      "package.json",
+      "node_modules/**/*",
+      "!node_modules/**/{test,tests,__tests__,example,examples,docs,coverage,.yarn,.github}/**/*",
+      "!node_modules/**/*.{map,ts,tsx,cts,mts}",
+      "!node_modules/**/{README,README.*,CHANGELOG,CHANGELOG.*,CHANGES,CHANGES.*}",
+      "!node_modules/docx/dist/{index.iife.js,index.umd.cjs,index.mjs}",
+      "!node_modules/mammoth/mammoth.browser*.js",
+      "!node_modules/{jszip,pako,xml-js}/dist/**/*",
+      "!node_modules/marked/lib/{marked.esm.js,marked.umd.js}",
+      "!node_modules/marked/{bin,man}/**/*",
+      "!node_modules/marked/marked.min.js",
+      "!node_modules/underscore/underscore{,-min,-umd,-umd-min,-esm,-esm-min}.js",
+      "!node_modules/underscore/{modules,amd,cjs}/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/markdown-file.ico",
+        "to": "assets/markdown-file.ico"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Inkdown",
+      "runAfterFinish": true
+    }
+  }
+}
