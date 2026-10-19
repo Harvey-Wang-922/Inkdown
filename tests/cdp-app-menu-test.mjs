@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+const fixturePath = fileURLToPath(new URL('./fixtures/startup-session.md', import.meta.url));
 const endpoint = process.argv[2] || 'http://127.0.0.1:9376';
 const pages = await (await fetch(`${endpoint}/json`)).json();
 const page = pages.find(item => item.type === 'page');
@@ -45,6 +47,44 @@ const result = await evaluate(`(async () => {
   assert(open().every(value => !value), '执行菜单项后应关闭菜单');
   return { titles: titles.length, hoverOpens: false, clickSwitches: true, outsideCloses: true, actionRuns: true };
 })()`);
+
+Object.assign(result, await evaluate(String.raw`(async()=>{
+  const assert=(value,message)=>{if(!value)throw new Error(message)};
+  const wait=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  const root=document.querySelector('#appMenuBar'),title=root.querySelector('.app-menu-title');
+  const expand=()=>{if(!root.firstElementChild.classList.contains('open'))title.click();const parent=root.querySelector('[data-action="recent-files"]');parent.click();return parent.nextElementSibling};
+  localStorage.removeItem('inkdown.recent');let panel=expand();
+  assert(panel.querySelector('button').disabled&&panel.textContent.includes('暂无最近文件'),'Empty recent state missing');
+  title.click();localStorage.setItem('inkdown.recent','{"bad":true}');panel=expand();
+  assert(panel.querySelector('button').disabled,'Malformed recent metadata crashed menu');title.click();
+  const file=await window.inkdown.readFile(${JSON.stringify(fixturePath)});
+  localStorage.setItem('inkdown.recent',JSON.stringify([{path:file.path,name:'<img src=x onerror=alert(1)>'},{path:'Z:/Inkdown-missing-regression.md',name:'Missing file'}]));
+  panel=expand();assert(panel.querySelectorAll('[data-action="open-recent"]').length===2,'Recent entries not loaded dynamically');
+  assert(!panel.querySelector('img')&&panel.textContent.includes('<img'),'Recent name interpreted as HTML');
+  assert(panel.querySelector('[data-action="open-recent"]').title===file.path,'Full path tooltip missing');
+  const parent=root.querySelector('[data-action="recent-files"]');parent.focus();
+  parent.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+  panel=parent.nextElementSibling;assert(panel.contains(document.activeElement),'Right arrow did not focus submenu');
+  const rect=panel.getBoundingClientRect();assert(rect.left>=7&&rect.right<=innerWidth-7&&rect.top>=7&&rect.bottom<=innerHeight-7,'Recent submenu left viewport bounds');
+  panel.querySelector('[data-action="open-recent"]').click();
+  for(let i=0;i<150&&!document.querySelector('.tab.active')?.textContent.includes('startup-session.md');i++)await new Promise(r=>setTimeout(r,20));
+  assert(document.querySelector('.tab.active')?.textContent.includes('startup-session.md'),'Recent entry did not open fixture');
+  assert(!root.firstElementChild.classList.contains('open'),'Opening recent entry did not close menu');
+  const tabs=document.querySelectorAll('.tab').length;panel=expand();panel.querySelector('[data-action="open-recent"]').click();await wait();
+  assert(document.querySelectorAll('.tab').length===tabs,'Recent open duplicated existing tab');
+  panel=expand();[...panel.querySelectorAll('[data-action="open-recent"]')].find(b=>b.textContent==='Missing file').click();
+  for(let i=0;i<100&&!document.querySelector('#toast').textContent.includes('无法打开文件');i++)await new Promise(r=>setTimeout(r,20));
+  assert(document.querySelector('#toast').textContent.includes('无法打开文件')&&document.querySelectorAll('.tab').length===tabs,'Missing recent file changed tabs or lacked feedback');
+  panel=expand();panel.querySelector('[data-action="clear-recent"]').click();
+  assert(localStorage.getItem('inkdown.recent')===null&&document.querySelectorAll('.tab').length===tabs,'Clearing recent records affected documents');
+  assert(!document.querySelector('#recentFiles .recent-file'),'Welcome recent list did not clear');
+  panel=expand();assert(panel.querySelector('button').disabled,'Cleared menu did not refresh');
+  parent.focus();parent.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+  panel.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+  assert(parent.getAttribute('aria-expanded')==='false'&&document.activeElement===parent,'Escape did not return to parent');
+  document.body.dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+  return {recentSubmenu:true,recentDynamicEntries:true,recentKeyboard:true,recentViewport:true,recentOpenReuse:true,recentMissingFeedback:true,recentClear:true};
+})()`));
 
 Object.assign(result, await evaluate(`(async()=>{
   const [{DocumentStore},{DocumentTransactionGate},{DocumentHistory}]=await Promise.all([

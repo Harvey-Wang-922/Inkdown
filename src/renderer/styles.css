@@ -43,6 +43,10 @@ button.primary:hover { opacity:.9; }
 .app-menu-item { width:100%; min-height:29px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:24px; padding:5px 9px; border-radius:4px; text-align:left; font-size:13px; white-space:nowrap; }
 .app-menu-item kbd { color:var(--muted); font:11px "Segoe UI Variable Text","Segoe UI",sans-serif; }
 .app-menu-separator { height:1px; margin:4px 5px; background:var(--line); }
+.app-menu-submenu-panel { position:fixed; z-index:201; display:none; width:320px; max-width:calc(100vw - 16px); max-height:calc(100vh - 16px); overflow-y:auto; padding:5px; border:1px solid var(--line); border-radius:7px; background:var(--paper); box-shadow:var(--shadow); }
+.app-menu-submenu.open > .app-menu-submenu-panel { display:block; }
+.app-menu-submenu-panel .app-menu-item > span { overflow:hidden; text-overflow:ellipsis; }
+.app-menu-item:disabled { color:var(--muted); cursor:default; }
 
 #app { width:100%; min-height:0; flex:1; display:flex; overflow:hidden; }
 #sidebar { width:258px; min-width:190px; max-width:380px; height:100%; display:flex; flex-direction:column; border-right:1px solid var(--line); background:var(--panel); transition:width .16s,min-width .16s; }

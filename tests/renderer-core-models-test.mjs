@@ -18,6 +18,11 @@ const [{ DocumentStore }, { DocumentHistory }, { DocumentTransactionGate }, { Do
 ]);
 
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const { normalizeRecentFiles } = await importSource('../src/renderer/core/document-store.js');
+assert(normalizeRecentFiles({ path: 'wrong' }).length === 0, 'Malformed recent storage must not become a menu');
+const recent = normalizeRecentFiles([null, { path: '' }, { path: 'C:\\Folder\\note.md' }, { path: 'c:/folder/note.md' }, { path: 'D:/note.md', name: '<b>name</b>' }]);
+assert(recent.length === 2 && recent[0].name === 'note.md' && recent[1].name === '<b>name</b>', 'Recent paths must deduplicate Windows spelling and preserve safe display text');
+assert(normalizeRecentFiles(Array.from({ length: 20 }, (_, i) => ({ path: 'C:/' + i + '.md' }))).length === 12, 'Recent menu must stay bounded');
 const bounds = { left: 300, right: 900, top: 90, bottom: 700 };
 const toolbar = floatingToolbarLayout({ left: 400, right: 800, top: -500, bottom: 500 }, bounds, { width: 850, height: 40 });
 assert(toolbar.left === 308 && toolbar.top === 98 && toolbar.maxWidth === 584, 'Floating toolbars must stay inside the editor when table headers scroll offscreen');

@@ -1,4 +1,4 @@
-import { DocumentStore, defaultSettings, loadSettings, saveSettings, loadRecentFiles, addRecentFile } from './core/document-store.js';
+import { DocumentStore, defaultSettings, loadSettings, saveSettings, loadRecentFiles, addRecentFile, clearRecentFiles } from './core/document-store.js';
 import { MarkdownInputController } from './core/markdown-input.js';
 import { SourceDocumentEngine } from './core/source-document-engine.mjs';
 import { DocumentHistory } from './core/document-history.js';
@@ -11,7 +11,7 @@ import { DocumentSaveCoordinator } from './core/document-save-coordinator.js';
 import { compileMarkdownStyle, DEFAULT_MARKDOWN_STYLE } from './core/markdown-style-config.js';
 import { ProjectionCoordinator } from './core/projection-coordinator.js';
 import { EditorProjectionController } from './core/editor-projection-controller.mjs';
-import { commandPaletteItems, resolveKeyboardAction } from './core/command-registry.js';
+import { commandPaletteItems, resolveKeyboardAction, commandItem } from './core/command-registry.js';
 import { SessionRestoreCoordinator } from './core/session-restore-coordinator.js';
 import { EditorFindController, replaceTextRanges } from './core/find-controller.js';
 import { filterWorkspaceTree, WorkspaceSearchCoordinator } from './core/workspace-search-model.js';
@@ -654,7 +654,7 @@ function executeTableAction(action) {
   return inputController.executeTableCommand(command);
 }
 
-async function executeAction(action) {
+async function executeAction(action, value) {
   if (document.body.inert) return;
   const doc = activeDoc();
   if (action.startsWith('table-')) return executeTableAction(action);
@@ -662,6 +662,8 @@ async function executeAction(action) {
   switch (action) {
     case 'new': return createDocument();
     case 'open': return openFiles();
+    case 'open-recent': return typeof value === 'string' ? openPath(value) : undefined;
+    case 'clear-recent': clearRecentFiles(); renderRecentFiles(); return;
     case 'folder': return openFolder();
     case 'save': return saveDocument();
     case 'save-as': return saveDocument(doc, true);
@@ -1007,7 +1009,11 @@ function bindUi() {
     event.preventDefault();
     void pasteSourceClipboard(event.clipboardData.getData('text/plain'), event.clipboardData.getData('text/html'));
   });
-  appMenu = new AppMenu(els.appMenuBar, executeAction);
+  appMenu = new AppMenu(els.appMenuBar, executeAction, () => {
+    const recent = loadRecentFiles();
+    return recent.length ? [...recent.map(file => ({ action: 'open-recent', label: file.name, title: file.path, value: file.path })),
+      null, commandItem('clear-recent')] : [{ label: '暂无最近文件', disabled: true }];
+  });
   $('#newBtn').onclick = $('#welcomeNew').onclick = () => executeAction('new');
   $('#welcomeOpen').onclick = () => executeAction('open');
   $('#welcomeFolder').onclick = $('#openFolderSideBtn').onclick = () => executeAction('folder');

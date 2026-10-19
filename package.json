@@ -1,6 +1,6 @@
 {
   "name": "inkdown",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A clean, local-first Markdown desktop editor",
   "main": "src/main.js",
   "author": "Inkdown",

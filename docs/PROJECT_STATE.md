@@ -6,10 +6,13 @@ This document records development state and limitations, not application version
 
 ## Build status
 
-- The requested release-directory cleanup and new build remain pending. The execution safety policy rejected batch clearing before it ran; no old artifacts were removed and no new installer was built for that request.
-- Existing custom.css and markdown-style.json were independently backed up under .build-backups/ and their hashes were verified. Continue after the user clears release/; do not bypass the rejected deletion with another tool or shell.
-- Previously completed source and packaged regression checks do not verify a future rebuild. Run the release checklist again for the actual new artifact.
-- The previously inspected application and installer were unsigned. No signing certificate/provider or internal scanner verdict was supplied; enterprise approval is unknown.
+- The latest requested rebuild completed from current source. Earlier batch directory clearing was rejected before running; it was not retried or bypassed. The rebuild generated its target installer without clearing unrelated historical artifacts.
+- Existing custom.css and markdown-style.json were independently backed up under .build-backups/, restored after building and verified byte-identical after regression runs.
+- Eleven core suites, 68 script syntax checks and all twelve source/packaged CDP suites passed. Both dependency audits, real source/packaged DOCX/PDF checks, packaged resource policy, 44 runtime-file ASAR parity and hardened fuses were verified.
+- A historical source list run failed its tab reprojection assertion; isolated and full fresh-profile reruns passed unchanged. No assertions or thresholds were relaxed; the cause remains unestablished. The latest metadata-only rebuild passed complete source and packaged suites without that failure.
+- The installer is unsigned. No signing certificate/provider or internal scanner verdict was supplied; enterprise approval is unknown. Final artifact details and hash are reported in the build handoff, not numbered in this document.
+- These checks verify this build only, not every future rebuild. Run the release checklist again for any subsequent artifact.
+- The latest metadata-only rebuild also verified Windows executable metadata against package.json, restored custom configuration unchanged and passed real packaged DOCX/PDF checks. Application behavior was not modified, documentation remains version-neutral, and other historical artifacts were retained.
 
 ## Implemented boundaries
 
@@ -21,6 +24,7 @@ This document records development state and limitations, not application version
 - Recovery uses debounced, ordered atomic IndexedDB writes and conditional legacy migration. Normal close waits for startup restoration and final recovery writing; stale close acknowledgements are rejected.
 - Document file saving remains manual-only. Removed autosave and typewriter settings cannot be re-enabled by loading old preferences.
 - Find/search models own match navigation and stale-result cancellation. Workspace search targets saved files and validates content before opening exact source offsets.
+- File menu Open Recent dynamically reuses the welcome-screen recent metadata, with bounded/deduplicated entries, full-path tooltips, submenu keyboard navigation, empty/malformed storage handling and viewport boundaries. Opening uses the normal guarded transaction and existing-tab reuse; missing files report failure without changing documents. Clearing recent records never deletes files, tabs or recovery.
 - Floating controls are editor-bounded, centered on visible anchors, hidden offscreen and mutually exclusive for table caret versus expanded text selection.
 - Shared codec configuration and render/sanitization services separate conversion rules from process/UI orchestration.
 
@@ -43,6 +47,8 @@ This document records development state and limitations, not application version
 - Config parsing, local links, instruction-chain size and project/core tests were checked. Client trust/config loading was not end-to-end verified; check it in a new trusted session.
 
 ## Verification evidence and limits
+
+- Recent-file menu changes passed all eleven core suites and twelve source/packaged CDP suites, including dynamic entries, text-only names, existing-tab reuse, missing-file feedback and clear/empty behavior. Syntax, both audits, packaged resource policy, 44-file source/ASAR parity, fuses, real DOCX/PDF checks and unchanged user configurations were verified. The installer remains unsigned; no new general source/AST preservation claim is made.
 
 - Completed source/packaged checks include startup/native input, nested lists, tables, search, clipboard, undo/redo viewport, manual saves, recovery close/restart and shell-open behavior.
 - Eleven core suites, script syntax checks, both dependency audits, DOCX roundtrip, real PDF security, resource policy, source/ASAR parity and fuses were previously verified. These results are time- and artifact-specific, not perpetual guarantees.
