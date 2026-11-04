@@ -34,6 +34,12 @@ This document records development state and limitations, not application version
 - Document file saving remains manual-only. Removed autosave and typewriter settings cannot be re-enabled by loading old preferences.
 - Find/search models own match navigation and stale-result cancellation. Workspace search targets saved files and validates content before opening exact source offsets.
 - Search directory catalog requests own their cache entry; invalidation or replacement prevents obsolete success/error from publishing or deleting the newer cache.
-- File menu Open Recent dynamically reuses the welcome-screen recent metadata, with bounded/deduplicated entries, full-path tooltips, submenu keyboard navigation, empty/malformed storage handling and viewport boundaries. Opening uses.
+- File menu Open Recent dynamically reuses the welcome-screen recent metadata, with bounded/deduplicated entries, full-path tooltips, submenu keyboard navigation, empty/malformed storage handling and viewport boundaries. Opening uses the normal guarded transaction and existing-tab reuse; missing files report failure without changing documents. Clearing recent records never deletes files, tabs or recovery.
+- Floating controls are editor-bounded, centered on visible anchors, hidden offscreen and mutually exclusive for table caret versus expanded text selection.
+- Shared codec configuration and render/sanitization services separate conversion rules from process/UI orchestration.
+
+## Installation, resources and security
+
+- Assisted NSIS pr.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
