@@ -46,6 +46,13 @@ This document records development state and limitations, not application version
 - Custom configuration creation uses wx semantics; rebuilds preserve and restore existing configuration byte-for-byte.
 - Export automatically embeds only verified in-directory raster images within bounded sizes. PDF blocks unrelated file/network requests and cleans its temporary HTML.
 - Renderer/export CSP, sandbox/isolation, permission denial, navigation constraints and packaged fuses are enforced and regression-tested.
-- Source and packaged resource checks do not establish antivirus clearance or lossless conversion for every possible document..
+- Source and packaged resource checks do not establish antivirus clearance or lossless conversion for every possible document.
+
+## AI development configuration
+
+- Root AGENTS.md is canonical. Renderer core, tests and build have local contributor guidance; docs/ai contains directory/workflow and task/handoff templates.
+- .codex/config.toml sets only the project instruction-read budget. It does not override models, providers, credentials, trust, sandbox, approvals, external services or hooks.
+- .gitignore excludes generated outputs, isolated test data, private task notes and credential/signing material without deleting them.
+- Contr.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
