@@ -1,6 +1,6 @@
 {
   "name": "inkdown",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "A clean, local-first Markdown desktop editor",
   "main": "src/main.js",
   "author": "Inkdown",
@@ -10,21 +10,22 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder --win nsis",
-    "dist:signed": "electron-builder --win nsis --config.forceCodeSigning=true",
+    "setup:electron": "node node_modules/electron/install.js",
+    "start": "node node_modules/electron/install.js && electron .",
+    "dist": "node node_modules/electron/install.js && electron-builder --win nsis",
+    "dist:signed": "node node_modules/electron/install.js && electron-builder --win nsis --config.forceCodeSigning=true",
     "test": "node tests/source-document-engine-test.mjs && node tests/file-source-preservation-test.cjs && node tests/renderer-core-models-test.mjs && node tests/architecture-boundaries-test.mjs && node tests/editor-projection-controller-test.mjs && node tests/session-recovery-coordinator-test.mjs && node tests/workspace-search-service-test.cjs && node tests/search-result-navigation-test.mjs && node tests/document-open-coordinator-test.mjs && node tests/export-security-test.cjs && node tests/project-contract-test.cjs"
   },
   "dependencies": {
     "docx": "^9.7.1",
     "mammoth": "1.13.0",
     "marked": "^15.0.12",
-    "sanitize-html": "2.18.0",
+    "sanitize-html": "2.18.1",
     "turndown": "^7.2.0",
     "turndown-plugin-gfm": "^1.0.2"
   },
   "devDependencies": {
-    "electron": "44.7.0",
+    "electron": "44.9.1",
     "electron-builder": "^26.0.12"
   },
   "build": {
