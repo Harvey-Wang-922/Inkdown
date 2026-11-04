@@ -39,6 +39,7 @@ Inkdown is a Windows, offline-first, Typora-style Markdown desktop editor. The u
 - `src/renderer/core/document-transaction-gate.js`: stale async-result guard.
 - `src/renderer/core/projection-coordinator.js`: the sole owner of projection revision, loading phase, and stale-render completion.
 - `src/renderer/core/editor-projection-controller.mjs`: guarded source/visual projection installation, block normalization, source-span capture and view activation; keep DOM projection transactions out of app orchestration.
+- `src/renderer/core/theme-controller.mjs`: last-request-wins display palette/native-theme synchronization; never commit theme changes to document source.
 - `src/renderer/core/command-registry.js`: canonical command labels, shortcuts, keyboard resolution, and command-palette entries.
 - `src/renderer/core/document-save-coordinator.js`: per-document save serialization and close-time invalidation.
 - `src/renderer/core/session-restore-coordinator.js`: bounded, deduplicated, progressive active-document-first session I/O with revision cancellation.
