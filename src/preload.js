@@ -41,6 +41,12 @@ contextBridge.exposeInMainWorld('inkdown', {
   exportDocument: (format, name, markdown, documentPath) => ipcRenderer.invoke('export-document', format, name, markdown, documentPath),
   getVersion: () => ipcRenderer.invoke('get-app-version'),
   getSystemTheme: () => ipcRenderer.invoke('get-system-theme'),
+  setTheme: theme => ipcRenderer.invoke('set-theme', theme),
+  onSystemThemeChanged: callback => {
+    const listener = () => callback();
+    ipcRenderer.on('system-theme-changed', listener);
+    return () => ipcRenderer.removeListener('system-theme-changed', listener);
+  },
   loadUserStyle: () => ipcRenderer.invoke('load-user-style'),
   openUserStyle: () => ipcRenderer.invoke('open-user-style'),
   toggleFullscreen: () => ipcRenderer.invoke('toggle-fullscreen'),
