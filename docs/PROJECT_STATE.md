@@ -16,12 +16,9 @@ This document records development state and limitations, not application version
 - Theme tests verified dark/light/sepia/system transitions, rapid request ordering, invalid IPC rejection and unchanged document HTML/source. Source and packaged client screenshots were visually inspected. Native caption pixels and actual OS accessibility/theme transitions were not captured end-to-end; native window decoration remains platform-managed.
 - Two source paste/redo runs failed with no paragraph anchor at the fixed-delay check. Additional diagnostics were added without changing editing code or assertions; an isolated rerun, full fresh-profile source run and full packaged run passed. The underlying cause remains unestablished and is not claimed fixed by theme changes.
 - History coalescing now requires touching/overlapping source changes within the typing interval. Rapid edits in distant paragraphs form separate undo steps in both editor modes; adjacent input and deletion still coalesce. Explicit recording/undo/redo ends the group, and obsolete timer callbacks cannot clear a newer group. Pure timer regressions and native input/undo/redo verified these boundaries without relaxing the typing interval.
-- Dependency maintenance applied same-major runtime/sanitizer patches and transitive security patches; the sanitizer no longer requires deepmerge. Full and production audits reported zero known advisories without ignore rules. Offbuilds preserve and restore existing configuration byte-for-byte.
-- Export automatically embeds only verified in-directory raster images within bounded sizes. PDF blocks unrelated file/network requests and cleans its temporary HTML.
-- Renderer/export CSP, sandbox/isolation, permission denial, navigation constraints and packaged fuses are enforced and regression-tested.
-- Source and packaged resource checks do not establish antivirus clearance or lossless conversion for every possible document.
-
-## AI development configuration
+- Dependency maintenance applied same-major runtime/sanitizer patches and transitive security patches; the sanitizer no longer requires deepmerge. Full and production audits reported zero known advisories without ignore rules. Official checksum-verified Electron runtime preparation is now an explicit setup command and runs before start/build.
+- During dependency preparation an initial source run timed out, and a later launch found the newly installed Electron package lacked its executable. After completing verified runtime preparation, the full source suite passed. This was not treated as an editor fix. Complete packaged suites and real packaged PDF/DOCX checks then passed; user configurations remained byte-identical.
+- Current searpment configuration
 
 - Root AGENTS.md is canonical. Renderer core, tests and build have local contributor guidance; docs/ai contains directory/workflow and task/handoff templates.
 - .codex/config.toml sets only the project instruction-read budget. It does not override models, providers, credentials, trust, sandbox, approvals, external services or hooks.
