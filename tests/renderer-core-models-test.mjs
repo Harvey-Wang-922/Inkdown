@@ -18,6 +18,31 @@ const [{ DocumentStore }, { DocumentHistory }, { DocumentTransactionGate }, { Do
 ]);
 
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
+{
+  const { ThemeController } = await importSource('../src/renderer/core/theme-controller.mjs');
+  const { normalizeTheme, nativeThemeSource } = await importSource('../src/shared/theme-policy.mjs');
+  const classes = new Set(), properties = new Map(), pending = [];
+  const controller = new ThemeController({
+    root: { style: { setProperty: (key, value) => properties.set(key, value) } },
+    body: { classList: { toggle: (key, on) => on ? classes.add(key) : classes.delete(key) } },
+    setNativeTheme: () => new Promise(resolve => pending.push(resolve))
+  });
+  const dark = controller.apply('dark'), light = controller.apply('light');
+  pending[1]('light'); await light; pending[0]('dark'); await dark;
+  assert(properties.get('color-scheme') === 'light' && !classes.has('theme-dark'), 'Stale theme response must not override a newer selection');
+  const sepia = controller.apply('sepia'); pending[2]('light'); await sepia;
+  assert(classes.has('theme-sepia') && properties.get('color-scheme') === 'light', 'Sepia must retain light native controls');
+  assert(await controller.refreshSystem() === false, 'System events must not override an explicit theme');
+  const system = controller.apply('system'); pending[3]('dark'); await system;
+  const change = controller.refreshSystem(); pending[4]('light'); await change;
+  assert(!classes.has('theme-dark') && !classes.has('theme-sepia'), 'System changes must refresh resolved colors');
+  assert(nativeThemeSource('sepia') === 'light' && normalizeTheme('invalid') === 'system', 'Theme preference policy must be bounded');
+}
+const { normalizeRecentFiles } = await importSource('../src/renderer/core/document-store.js');
+assert(normalizeRecentFiles({ path: 'wrong' }).length === 0, 'Malformed recent storage must not become a menu');
+const recent = normalizeRecentFiles([null, { path: '' }, { path: 'C:\\Folder\\note.md' }, { path: 'c:/folder/note.md' }, { path: 'D:/note.md', name: '<b>name</b>' }]);
+assert(recent.length === 2 && recent[0].name === 'note.md' && recent[1].name === '<b>name</b>', 'Recent paths must deduplicate Windows spelling and preserve safe display text');
+assert(normalizeRecentFiles(Array.from({ length: 20 }, (_, i) => ({ path: 'C:/' + i + '.md' }))).length === 12, 'Recent menu must stay bounded');
 const bounds = { left: 300, right: 900, top: 90, bottom: 700 };
 const toolbar = floatingToolbarLayout({ left: 400, right: 800, top: -500, bottom: 500 }, bounds, { width: 850, height: 40 });
 assert(toolbar.left === 308 && toolbar.top === 98 && toolbar.maxWidth === 584, 'Floating toolbars must stay inside the editor when table headers scroll offscreen');
@@ -50,6 +75,35 @@ assert(!gate.isCurrent(transaction), 'a new projection must invalidate an async 
 assert(gate.isCurrent(transaction, { projection: false }), 'projection validation should be explicitly optional');
 
 const history = new DocumentHistory();
+{
+  const grouped = new DocumentHistory(), doc = {};
+  grouped.ensure(doc, 'first paragraph\n\nlast paragraph');
+  grouped.schedule(doc, () => 'first! paragraph\n\nlast paragraph');
+  grouped.schedule(doc, () => 'first! paragraph\n\nlast? paragraph');
+  grouped.cancel(doc);
+  assert(grouped.restore(doc, -1) === 'first! paragraph\n\nlast paragraph', 'Distant edits made quickly must undo independently');
+}
+{
+  const callbacks = [], history = new DocumentHistory(120, 280, {
+    setTimer: callback => { callbacks.push(callback); return callbacks.length - 1; }, clearTimer() {}
+  }), doc = {}, other = {};
+  history.ensure(doc, 'alpha\n\nomega'); history.ensure(other, 'separate');
+  history.schedule(doc, () => 'alpha!\n\nomega');
+  history.schedule(doc, () => 'alpha!!\n\nomega');
+  callbacks[0](); // Simulate an old callback already queued when its timer was cancelled.
+  history.schedule(doc, () => 'alpha!!!\n\nomega');
+  assert(doc.history.length === 2, 'Adjacent typing must coalesce even if stale timers run');
+  history.schedule(doc, () => 'alpha!!\n\nomega');
+  assert(doc.history.length === 2, 'Adjacent backspace must remain in the current typing group');
+  history.schedule(doc, () => 'alpha!!\n\nomega?');
+  assert(doc.history.length === 3, 'A distant edit must start a new group');
+  history.schedule(other, () => 'separate!');
+  assert(history.restore(doc, -1) === 'alpha!!\n\nomega' && history.restore(doc, 1) === 'alpha!!\n\nomega?', 'Group undo/redo must restore exact source');
+  history.restore(doc, -1); history.schedule(doc, () => 'alpha!!\n\nomega new');
+  assert(history.restore(doc, 1) === null, 'New edits after undo must discard the redo branch');
+  assert(history.restore(other, -1) === 'separate', 'History groups must remain document-local');
+  history.cancel(doc); history.cancel(other);
+}
 history.ensure(first, 'before');
 first.content = 'after';
 history.schedule(first, () => first.content);
