@@ -56,11 +56,59 @@ assert.equal(catalogLoads, 2, 'expired directory catalogs must refresh');
 catalogService.invalidateFolder('docs');
 await catalogService.searchFolder('docs', 'last', 15, loadCatalog);
 assert.equal(catalogLoads, 3, 'workspace mutations must invalidate the directory catalog');
+// Resolve old directory reads after invalidation/replacement, without timing sleeps.
+const deferred = () => {
+  let resolve, reject;
+  const promise = new Promise((ok, fail) => { resolve = ok; reject = fail; });
+  return { promise, resolve, reject };
+};
+const oldFiles = [{ path: 'old.md', name: 'old.md' }];
+const newFiles = [{ path: 'new.md', name: 'new.md' }];
+const unexpectedLoad = () => { throw new Error('A stale completion discarded the current directory cache'); };
+const oldCatalog = deferred();
+const oldRequest = catalogService.filesForFolder('race', () => oldCatalog.promise);
+catalogService.invalidateFolder('race');
+const newCatalog = deferred();
+const newRequest = catalogService.filesForFolder('race', () => newCatalog.promise);
+newCatalog.resolve(newFiles); await newRequest;
+oldCatalog.resolve(oldFiles); await oldRequest;
+assert.deepEqual(await catalogService.filesForFolder('race', unexpectedLoad), newFiles,
+  'an invalidated directory read must not overwrite a newer catalog');
+
+const failingCatalog = deferred();
+const failingRequest = catalogService.filesForFolder('failure-race', () => failingCatalog.promise);
+const expectedFailure = assert.rejects(failingRequest, /old directory error/);
+catalogService.invalidateFolder('failure-race');
+const currentCatalog = deferred();
+const currentRequest = catalogService.filesForFolder('failure-race', () => currentCatalog.promise);
+failingCatalog.reject(new Error('old directory error')); await expectedFailure;
+const sharedCurrent = catalogService.filesForFolder('failure-race', unexpectedLoad);
+currentCatalog.resolve(newFiles);
+assert.deepEqual(await sharedCurrent, newFiles, 'stale failure must not remove a newer pending catalog');
+await currentRequest;
+
+const primedCatalog = deferred();
+const primedRequest = catalogService.filesForFolder('primed', () => primedCatalog.promise);
+catalogService.primeCatalog('primed', newFiles);
+primedCatalog.resolve(oldFiles); await primedRequest;
+assert.deepEqual(await catalogService.filesForFolder('primed', unexpectedLoad), newFiles,
+  'explicitly primed folder state must supersede an older enumeration');
+
+const clearedCatalog = deferred();
+const clearedRequest = catalogService.filesForFolder('cleared', () => clearedCatalog.promise);
+catalogService.invalidateCatalogs();
+clearedCatalog.resolve(oldFiles); await clearedRequest;
+assert.deepEqual(await catalogService.filesForFolder('cleared', () => newFiles), newFiles,
+  'global invalidation must prevent pending reads from repopulating old catalogs');
+await assert.rejects(catalogService.filesForFolder('retry', () => { throw new Error('current directory error'); }),
+  /current directory error/);
+assert.deepEqual(await catalogService.filesForFolder('retry', () => newFiles), newFiles,
+  'a current enumeration failure must permit a normal retry');
 const limited = new WorkspaceSearchService({
   maxResults: 2, stat: async () => ({ size: 9, mtimeMs: 1 }),
   readDocument: async () => ({ content: 'hit hit hit' })
 });
 const truncated = await limited.search([{ path: 'many.md', name: 'many.md' }], 'hit', 10);
 assert.equal(truncated.results.length, 2); assert.equal(truncated.truncated, true);
-console.log(JSON.stringify({ allOccurrences: true, deterministicOrder: true, boundedConcurrency: true, contentCache: true, catalogCache: true, resultLimit: true }));
+console.log(JSON.stringify({ allOccurrences: true, deterministicOrder: true, boundedConcurrency: true, contentCache: true, catalogCache: true, staleCatalogIsolation: true, resultLimit: true }));
 })().catch(error => { console.error(error); process.exitCode = 1; });
