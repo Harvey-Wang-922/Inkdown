@@ -58,6 +58,9 @@ This document records development state and limitations, not application version
 
 ## Verification evidence and limits
 
-- Recent-file menu changes passed all eleven core suites and twelve source/packaged CDP suites, including dynamic entries, text-only names, existing-ta.
+- Recent-file menu changes passed all eleven core suites and twelve source/packaged CDP suites, including dynamic entries, text-only names, existing-tab reuse, missing-file feedback and clear/empty behavior. Syntax, both audits, packaged resource policy, 44-file source/ASAR parity, fuses, real DOCX/PDF checks and unchanged user configurations were verified. The installer remains unsigned; no new general source/AST preservation claim is made.
+
+- Completed source/packaged checks include startup/native input, nested lists, tables, search, clipboard, undo/redo viewport, manual saves, recovery close/restart and shell-open behavior.
+- Eleven core suites, script.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
