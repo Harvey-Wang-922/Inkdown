@@ -5,6 +5,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 const packageJson = JSON.parse(read('package.json'));
+assert.equal(packageJson.scripts['setup:electron'], 'node node_modules/electron/install.js', 'Source tests need an explicit verified Electron preparation step');
+assert.ok(packageJson.scripts.start.startsWith('node node_modules/electron/install.js &&'), 'Source startup must prepare a missing Electron binary');
 const readme = read('README.md');
 const main = read('src/main.js');
 const preload = read('src/preload.js');
@@ -51,6 +53,9 @@ assert.ok(!packageJson.build.files.some(pattern => /LICENSE|COPYING|NOTICE/i.tes
 assert.deepEqual(packageJson.build.electronFuses, { runAsNode: false, enableNodeOptionsEnvironmentVariable: false, enableNodeCliInspectArguments: false, enableEmbeddedAsarIntegrityValidation: true, onlyLoadAppFromAsar: true });
 assert.match(read('src/renderer/index.html'), /Content-Security-Policy/);
 assert.match(main, /sandbox: true/);
+assert.match(main, /handleTrusted\('set-theme'/);
+assert.match(preload, /onSystemThemeChanged/);
+assert.match(rendererApp, /ThemeController/);
 assert.match(main, /setPermissionCheckHandler\(\(\) => false\)/);
 assert.equal(packageJson.build.nsis.perMachine, false);
 assert.equal(packageJson.build.nsis.allowToChangeInstallationDirectory, true);
