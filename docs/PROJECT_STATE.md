@@ -10,9 +10,9 @@ This document records development state and limitations, not application version
 - Existing custom.css and markdown-style.json were independently backed up under .build-backups/, restored after building and verified byte-identical after regression runs.
 - Eleven core suites, 70 script syntax checks and all twelve source/packaged CDP suites passed. Both dependency audits, real source/packaged DOCX/PDF checks, packaged resource policy, 46 runtime-file ASAR parity and hardened fuses were verified.
 - A historical source list run failed its tab reprojection assertion; isolated and full fresh-profile reruns passed unchanged. No assertions or thresholds were relaxed; the cause remains unestablished. The latest history/dependency rebuild passed complete source and packaged suites without that failure.
-- The installer is unsigned. No signing certificate/provide spans. Changed blocks patch source while preserving untouched neighboring bytes; detached partial paste uses the same boundary.
-- EditorProjectionController owns installation, normalization, span capture and view activation. ProjectionCoordinator binds epoch, document id, source revision and editor mode, including stale success/error/cleanup protection.
-- History stores source-only strings. Transient block-relative caret and pane/textarea scroll restoration prevent unconditional document-end placement during undo/redo.
+- The installer is unsigned. No signing certificate/provider or internal scanner verdict was supplied; enterprise approval is unknown. Final artifact details and hash are reported in the build handoff, not numbered in this document.
+- These checks verify this build only, not every future rebuild. Run the release checklist again for any subsequent artifact.
+- Theme synchronization now couples the last requested body palette/root color-scheme with trusted native Electron theme updates. Dark scrollbars and native form controls no longer retain the light scheme; highling undo/redo.
 - Source editing, list/table semantics, normal opening, manual save serialization and bounded session restoration have dedicated models/coordinators.
 - Recovery uses debounced, ordered atomic IndexedDB writes and conditional legacy migration. Normal close waits for startup restoration and final recovery writing; stale close acknowledgements are rejected.
 - Document file saving remains manual-only. Removed autosave and typewriter settings cannot be re-enabled by loading old preferences.
