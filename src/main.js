@@ -10,6 +10,7 @@ const { ExportService } = require('./services/export-service');
 const { ExternalOpenCoordinator } = require('./services/external-open-coordinator');
 const { WorkspaceSearchService } = require('./services/workspace-search-service');
 const { createMarkdownCodec } = require('./shared/markdown-codec.mjs');
+const { normalizeTheme, nativeThemeSource } = require('./shared/theme-policy.mjs');
 const USER_STYLE_TEMPLATE_PATH = path.join(__dirname, 'assets', 'custom.css');
 const MARKDOWN_STYLE_TEMPLATE_PATH = path.join(__dirname, 'assets', 'markdown-style.json');
 const externalOpenCoordinator = new ExternalOpenCoordinator(MARKDOWN_EXTENSIONS);
@@ -268,6 +269,18 @@ handleTrusted('read-clipboard-content', async () => {
 });
 handleTrusted('get-app-version', () => app.getVersion());
 handleTrusted('get-system-theme', () => nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+handleTrusted('set-theme', (_, preference) => {
+  if (normalizeTheme(preference) !== preference) throw new Error('不支持的主题');
+  const source = nativeThemeSource(preference);
+  if (nativeTheme.themeSource !== source) nativeTheme.themeSource = source;
+  const resolved = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+  mainWindow.setBackgroundColor(resolved === 'dark' ? '#202124' : preference === 'sepia' ? '#fbf6ec' : '#ffffff');
+  return resolved;
+});
+nativeTheme.on('updated', () => {
+  if (nativeTheme.themeSource === 'system' && mainWindow && !mainWindow.isDestroyed())
+    mainWindow.webContents.send('system-theme-changed');
+});
 handleTrusted('load-user-style', async () => {
   const { stylePath, configPath, configDirectory } = await ensureUserStyleFiles();
   const [styleStats, configStats] = await Promise.all([fs.stat(stylePath), fs.stat(configPath)]);
