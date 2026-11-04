@@ -33,6 +33,8 @@ AI 辅助开发从 [AGENTS.md](AGENTS.md) 开始，目录说明、验证流程�
 
 文档内查找会高亮所有匹配项，并平滑滚动到当前关键词。文件夹搜索查找已保存的文件，点击结果会进入源码模式，准确选中该处内容（包括链接地址等可视模式中隐藏的内容）。如果文档在搜索后已发生变化，会提示重新搜索。
 
+“文件 → 打开最近文件”可快速打开最近使用的文档，最多显示 12 条记录，悬停可查看完整路径。子菜单支持方向键和 Esc；“清空最近文件记录”只清除列表，不删除文件或关闭标签。文件已移动或删除时会提示打开失败。
+
 文件夹搜索结果按文件分组，显示相对路径、各文件匹配数及总数。输入框中按 `↓` / `↑` 进入首项 / 末项，结果中按方向键连续选择、`Home` / `End` 到首末项，`Enter` 打开，`Esc` 返回搜索输入框。输入关键词后可直接按 `Enter` 搜索并打开结果，也可一键清空。
 
 粘贴 Markdown 会按语法渲染，不会把粘贴内容自动转义。`Ctrl+Shift+V` 可粘贴为字面纯文本；代码块中保留原文和换行。空文档/全选粘贴保留原始 Markdown；局部可视选区仍经过现有转换桥，周围源码可能被规范化。
@@ -78,11 +80,12 @@ AI 辅助开发从 [AGENTS.md](AGENTS.md) 开始，目录说明、验证流程�
 
 ```powershell
 pnpm install --frozen-lockfile
+pnpm setup:electron
 pnpm test
 pnpm start
 ```
 
-`pnpm start` 启动源码 Electron；`pnpm test` 运行核心回归，不等于完成真实编辑与发行验证。新维护者先阅读 [AGENTS.md](AGENTS.md)，核对 [当前项目状态](docs/PROJECT_STATE.md)，修改编辑行为前阅读 [架构文档](docs/ARCHITECTURE.md)。
+`pnpm setup:electron` 使用 Electron 官方安装程序准备运行时并校验下载文件，首次准备可能需要联网；已有运行时不会重复下载。`pnpm start` 和打包脚本也包含该准备步骤。`pnpm test` 运行核心回归，不等于完成真实编辑与发行验证。新维护者先阅读 [AGENTS.md](AGENTS.md)，核对 [当前项目状态](docs/PROJECT_STATE.md)，修改编辑行为前阅读 [架构文档](docs/ARCHITECTURE.md)。
 
 ### 项目目录
 
