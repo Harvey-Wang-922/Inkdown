@@ -29,7 +29,9 @@ This document records development state and limitations, not application version
 - Ordinary visual projections have verified top-level source spans. Changed blocks patch source while preserving untouched neighboring bytes; detached partial paste uses the same boundary.
 - EditorProjectionController owns installation, normalization, span capture and view activation. ProjectionCoordinator binds epoch, document id, source revision and editor mode, including stale success/error/cleanup protection.
 - History stores source-only strings and groups nearby source changes rather than every edit within one timer window. Transient block-relative caret and pane/textarea scroll restoration prevent unconditional document-end placement during undo/redo.
-- Source editing, list/table semarojections and support exported custom styles.
-8. Generate shortcut documentation from the canonical command registry.
+- Source editing, list/table semantics, normal opening, manual save serialization and bounded session restoration have dedicated models/coordinators.
+- Recovery uses debounced, ordered atomic IndexedDB writes and conditional legacy migration. Normal close waits for startup restoration and final recovery writing; stale close acknowledgements are rejected.
+- Document file saving remains manual-only. Removed autosave and typewriter settings cannot be re-enabled by loading old preferences.
+- Find/search models own match navigation and stale-re.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
