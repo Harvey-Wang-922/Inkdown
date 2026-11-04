@@ -185,7 +185,7 @@ try {
     const undone = await evaluate(`new Promise(r=>setTimeout(()=>r({scroll:document.querySelector('#editorPane').scrollTop,block:getSelection().anchorNode?.parentElement.closest('p')?.textContent,offset:getSelection().anchorOffset}),300))`);
     if (Math.abs(undone.scroll-pastePosition.after)>4 || undone.block!=='Paragraph 95 MARK tail') throw new Error('Ctrl+Z moved to unrelated block/viewport: '+JSON.stringify(undone));
     await shortcut('y', 'KeyY');
-    const redone = await evaluate(`new Promise(r=>setTimeout(()=>r({scroll:document.querySelector('#editorPane').scrollTop,block:getSelection().anchorNode?.parentElement.closest('p')?.textContent}),300))`);
+    const redone = await evaluate(`new Promise(r=>setTimeout(()=>r({scroll:document.querySelector('#editorPane').scrollTop,block:getSelection().anchorNode?.parentElement.closest('p')?.textContent,anchor:getSelection().anchorNode?.nodeName,offset:getSelection().anchorOffset,active:document.activeElement?.id,sourceHidden:document.querySelector('#sourceEditor').classList.contains('hidden'),toast:document.querySelector('#toast').textContent,selected:getSelection().toString(),html:document.querySelector('#wysiwyg').innerHTML.slice(0,150)}),300))`);
     if (Math.abs(redone.scroll-undone.scroll)>4 || redone.block!=='ParaMARKgraph 95 MARK tail') throw new Error('Ctrl+Y moved to unrelated block/viewport: '+JSON.stringify(redone));
   }
   await evaluate(`(async()=>{
@@ -201,4 +201,41 @@ try {
   const sourceUndo=await evaluate(`({offset:document.querySelector('#sourceEditor').selectionStart,expected:window.historySourceOffset+1,scroll:document.querySelector('#sourceEditor').scrollTop,before:window.historySourceScroll,value:document.querySelector('#sourceEditor').value.includes('SourXce')})`);
   if(sourceUndo.offset!==sourceUndo.expected||Math.abs(sourceUndo.scroll-sourceUndo.before)>4||sourceUndo.value)throw new Error('Source undo moved caret/viewport: '+JSON.stringify(sourceUndo));
   console.log(JSON.stringify({nativeCopyPasteViewport:true,focusClipboardViewport:true,nativeUndoRedoViewport:true,sourceUndoViewport:true}));
+  for (const sourceMode of [false, true]) {
+    await evaluate(`(async()=>{
+      const wait=ms=>new Promise(r=>setTimeout(r,ms));
+      document.querySelector('#newBtn').click();
+      const source=document.querySelector('#sourceEditor'),mode=document.querySelector('#sourceModeBtn');
+      if(source.classList.contains('hidden'))mode.click();
+      source.value='alpha paragraph\\n\\nmiddle unchanged\\n\\nomega paragraph';source.dispatchEvent(new Event('input',{bubbles:true}));
+      if(!${sourceMode})mode.click();
+      for(let i=0;i<100&&!${sourceMode}&&document.querySelectorAll('#wysiwyg p').length!==3;i++)await wait(20);
+      await wait(320); // Settle the fixture's history group; the tested native edits below have no delay.
+      if(${sourceMode}){source.focus();source.setSelectionRange(5,5)}
+      else{const editor=document.querySelector('#wysiwyg'),r=document.createRange();editor.focus({preventScroll:true});r.setStart(editor.querySelector('p').firstChild,5);r.collapse(true);getSelection().removeAllRanges();getSelection().addRange(r)}
+      window.historyGroupStarted=performance.now();
+    })()`);
+    await command('Input.insertText',{text:'A'});
+    await evaluate(`(()=>{
+      if(${sourceMode}){const source=document.querySelector('#sourceEditor'),offset=source.value.indexOf('omega')+5;source.setSelectionRange(offset,offset)}
+      else{const node=document.querySelector('#wysiwyg p:last-child').firstChild,r=document.createRange();r.setStart(node,5);r.collapse(true);getSelection().removeAllRanges();getSelection().addRange(r)}
+    })()`);
+    await command('Input.insertText',{text:'B'});
+    const elapsed = await evaluate('performance.now()-window.historyGroupStarted');
+    if (elapsed >= 280) throw new Error('Native history fixture exceeded grouping window: '+elapsed);
+    await shortcut('z','KeyZ');
+    const undone = await evaluate(`(async()=>{for(let i=0;i<100;i++){
+      const value=${sourceMode} ? document.querySelector('#sourceEditor').value : document.querySelector('#wysiwyg').textContent;
+      if(value.includes('alphaA')&&!value.includes('omegaB'))return value;
+      await new Promise(r=>setTimeout(r,20));
+    }throw new Error('Distant native edits merged into one undo')})()`);
+    if (!undone.includes('alphaA')) throw new Error('Earlier editing location was undone');
+    await shortcut('y','KeyY');
+    await evaluate(`(async()=>{for(let i=0;i<100;i++){
+      const value=${sourceMode} ? document.querySelector('#sourceEditor').value : document.querySelector('#wysiwyg').textContent;
+      if(value.includes('alphaA')&&value.includes('omegaB'))return;
+      await new Promise(r=>setTimeout(r,20));
+    }throw new Error('Native history redo lost a group')})()`);
+  }
+  console.log(JSON.stringify({visualDistantUndoGroups:true,sourceDistantUndoGroups:true}));
 } finally { socket.close(); }
