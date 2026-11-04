@@ -18,12 +18,8 @@ This document records development state and limitations, not application version
 - History coalescing now requires touching/overlapping source changes within the typing interval. Rapid edits in distant paragraphs form separate undo steps in both editor modes; adjacent input and deletion still coalesce. Explicit recording/undo/redo ends the group, and obsolete timer callbacks cannot clear a newer group. Pure timer regressions and native input/undo/redo verified these boundaries without relaxing the typing interval.
 - Dependency maintenance applied same-major runtime/sanitizer patches and transitive security patches; the sanitizer no longer requires deepmerge. Full and production audits reported zero known advisories without ignore rules. Official checksum-verified Electron runtime preparation is now an explicit setup command and runs before start/build.
 - During dependency preparation an initial source run timed out, and a later launch found the newly installed Electron package lacked its executable. After completing verified runtime preparation, the full source suite passed. This was not treated as an editor fix. Complete packaged suites and real packaged PDF/DOCX checks then passed; user configurations remained byte-identical.
-- Current searpment configuration
-
-- Root AGENTS.md is canonical. Renderer core, tests and build have local contributor guidance; docs/ai contains directory/workflow and task/handoff templates.
-- .codex/config.toml sets only the project instruction-read budget. It does not override models, providers, credentials, trust, sandbox, approvals, external services or hooks.
-- .gitignore excludes generated outputs, isolated test data, private task notes and credential/signing material without deleting them.
-- Contributor guides under src are excluded from runtime packaging. AI configuration is development-only, not an in-application model integration.
+- Current search-cache verification reproduced an old directory enumeration overwriting a newer catalog after invalidation. Publication and error cleanup now require request-entry identity. Deterministic regressions cover late success, late failure, explicit priming, global invalidation and normal failure/retry; overlapping queries still share the current enumeration. Old callers retain their own result/error, with renderer query/navigation cancellation unchanged.
+- After the catalog repair, all eleven core suites, 70 syunder src are excluded from runtime packaging. AI configuration is development-only, not an in-application model integration.
 - Config parsing, local links, instruction-chain size and project/core tests were checked. Client trust/config loading was not end-to-end verified; check it in a new trusted session.
 
 ## Verification evidence and limits
