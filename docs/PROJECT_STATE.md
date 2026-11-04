@@ -43,6 +43,9 @@ This document records development state and limitations, not application version
 - Assisted NSIS preserves installation-directory selection and explicit optional Markdown association. Installation does not open Windows Settings automatically, bypass UserChoice or kill every application process.
 - Packaging retains English and both Chinese locale packs. Development tooling/fixtures, maps/types and confirmed unused duplicate browser builds are excluded.
 - Runtime entry points, licenses, ICU, graphics/software-rendering compatibility and Word/PDF support are retained.
-- Custom configuration creation uses wx.
+- Custom configuration creation uses wx semantics; rebuilds preserve and restore existing configuration byte-for-byte.
+- Export automatically embeds only verified in-directory raster images within bounded sizes. PDF blocks unrelated file/network requests and cleans its temporary HTML.
+- Renderer/export CSP, sandbox/isolation, permission denial, navigation constraints and packaged fuses are enforced and regression-tested.
+- Source and packaged resource checks do not establish antivirus clearance or lossless conversion for every possible document..
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
