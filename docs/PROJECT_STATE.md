@@ -6,9 +6,9 @@ This document records development state and limitations, not application version
 
 ## Build status
 
-- The requested release-directory cleanup and new build remain pending. The execution safety policy rejected batch clearing before it ran; no old artifacts were removed and no new installer was built for that request.
-- Existing custom.css and markdown-style.json were independently backed up under .build-backups/ and their hashes were verified. Continue after the user clears release/; do not bypass the rejected deletion with another tool or shell.
-- Previously completed source and packaged regression checks do not verify a future rebuild. Run the release checklist again for the actual new artifact.
+- The latest requested rebuild completed from current source. Earlier batch directory clearing was rejected before running; it was not retried or bypassed. The rebuild generated its target installer without clearing unrelated historical artifacts.
+- Existing custom.css and markdown-style.json were independently backed up under .build-backups/, restored after building and verified byte-identical after regression runs.
+- Eleven core suites, 70 script syntax checks and all twelve source/packaged CDP suites passed. Bt verify a future rebuild. Run the release checklist again for the actual new artifact.
 - The previously inspected application and installer were unsigned. No signing certificate/provider or internal scanner verdict was supplied; enterprise approval is unknown.
 
 ## Implemented boundaries
