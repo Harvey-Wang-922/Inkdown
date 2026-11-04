@@ -13,13 +13,9 @@ This document records development state and limitations, not application version
 - The installer is unsigned. No signing certificate/provider or internal scanner verdict was supplied; enterprise approval is unknown. Final artifact details and hash are reported in the build handoff, not numbered in this document.
 - These checks verify this build only, not every future rebuild. Run the release checklist again for any subsequent artifact.
 - Theme synchronization now couples the last requested body palette/root color-scheme with trusted native Electron theme updates. Dark scrollbars and native form controls no longer retain the light scheme; highlight variables follow each palette. Explicit sepia uses light native controls, and system events do not override explicit preferences. No OS-wide theme or user CSS file is modified.
-- Theme tests verified dark/light/sepia/system transitions, rapid request ordering, invalid IPC rejection and unchanged document HTML/source. Source and packaged client screenshots were visually inspected. Native caption pixels and actual OS accessibility/theme transitions were not captured end-to-end; native window decoration research models own match navigation and stale-result cancellation. Workspace search targets saved files and validates content before opening exact source offsets.
-- Floating controls are editor-bounded, centered on visible anchors, hidden offscreen and mutually exclusive for table caret versus expanded text selection.
-- Shared codec configuration and render/sanitization services separate conversion rules from process/UI orchestration.
-
-## Installation, resources and security
-
-- Assisted NSIS preserves installation-directory selection and explicit optional Markdown association. Installation does not open Windows Settings automatically, bypass UserChoice or kill every application process.
+- Theme tests verified dark/light/sepia/system transitions, rapid request ordering, invalid IPC rejection and unchanged document HTML/source. Source and packaged client screenshots were visually inspected. Native caption pixels and actual OS accessibility/theme transitions were not captured end-to-end; native window decoration remains platform-managed.
+- Two source paste/redo runs failed with no paragraph anchor at the fixed-delay check. Additional diagnostics were added without changing editing code or assertions; an isolated rerun, full fresh-profile source run and full packaged run passed. The underlying cause remains unestablished and is not claimed fixed by theme changes.
+- History coalescing now requires touching/overlapping source changes within the typing interval. Rapid edits in distant paragraphs form separate undo steps lation-directory selection and explicit optional Markdown association. Installation does not open Windows Settings automatically, bypass UserChoice or kill every application process.
 - Packaging retains English and both Chinese locale packs. Development tooling/fixtures, maps/types and confirmed unused duplicate browser builds are excluded.
 - Runtime entry points, licenses, ICU, graphics/software-rendering compatibility and Word/PDF support are retained.
 - Custom configuration creation uses wx semantics; rebuilds preserve and restore existing configuration byte-for-byte.
