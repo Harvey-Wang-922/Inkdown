@@ -1,4 +1,4 @@
-# Inkdown
+# Inkdqqown
 
 一个本地优先、采用 Typora 风格实时编辑方式的 Windows Markdown 桌面编辑器。
 
