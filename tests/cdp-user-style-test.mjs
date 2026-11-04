@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 
 const endpoint = process.argv[2] || 'http://127.0.0.1:9378';
 const pages = await (await fetch(`${endpoint}/json`)).json();
@@ -28,6 +29,46 @@ if (initial.installedConfig && !initial.path.includes('win-unpacked\\config\\mar
 const originalConfig = await readFile(initial.path, 'utf8');
 const originalCss = await readFile(initial.cssPath, 'utf8');
 try {
+  console.log(JSON.stringify(await evaluate(`(async()=>{
+    const assert=(v,m)=>{if(!v)throw new Error(m)};
+    const waitFor=async check=>{for(let i=0;i<150;i++){if(check())return;await new Promise(r=>setTimeout(r,20))}throw new Error('Theme readiness timeout')};
+    const editor=document.querySelector('#wysiwyg'),source=document.querySelector('#sourceEditor');
+    const before=editor.innerHTML,sourceBefore=source.value;
+    document.querySelector('[data-action="settings"]').click();
+    const select=document.querySelector('#settingTheme');
+    const set=value=>{select.value=value;select.dispatchEvent(new Event('input',{bubbles:true}))};
+    set('dark');await waitFor(()=>getComputedStyle(document.documentElement).colorScheme==='dark');
+    assert(document.body.classList.contains('theme-dark'),'Dark class missing');
+    await waitFor(()=>matchMedia('(prefers-color-scheme: dark)').matches);
+    const scrollbar=getComputedStyle(document.querySelector('#editorPane')).scrollbarColor;
+    assert(scrollbar.includes('rgb(115, 119, 128)')&&scrollbar.includes('rgb(29, 30, 32)'),'Scrollbar retained light palette: '+scrollbar);
+    assert(getComputedStyle(document.querySelector('#settingTheme')).colorScheme==='dark','Select did not inherit dark controls');
+    set('light');await waitFor(()=>getComputedStyle(document.documentElement).colorScheme==='light'&&!document.body.classList.contains('theme-dark'));
+    set('sepia');await waitFor(()=>document.body.classList.contains('theme-sepia'));
+    assert(!matchMedia('(prefers-color-scheme: dark)').matches,'Sepia forced native dark theme');
+    set('dark');set('light');set('dark');await waitFor(()=>document.body.classList.contains('theme-dark')&&getComputedStyle(document.documentElement).colorScheme==='dark');
+    set('system');const resolved=await window.inkdown.setTheme('system');
+    await waitFor(()=>document.body.classList.contains('theme-dark')===(resolved==='dark'));
+    let rejected=false;try{await window.inkdown.setTheme('invalid')}catch{rejected=true}assert(rejected,'Invalid native theme accepted');
+    assert(editor.innerHTML===before&&source.value===sourceBefore,'Theme changed document projection/source');
+    set('light');await waitFor(()=>getComputedStyle(document.documentElement).colorScheme==='light');
+    document.querySelector('#settingsDone').click();
+    return {darkScrollbar:true,nativeThemeSynced:true,controlColorScheme:true,rapidThemeSwitch:true,systemTheme:true,invalidThemeRejected:true,themeSourceUnchanged:true};
+  })()`)));
+  await evaluate(`(async()=>{
+    document.querySelector('#newBtn').click();
+    const source=document.querySelector('#sourceEditor'),mode=document.querySelector('#sourceModeBtn');
+    if(source.classList.contains('hidden'))mode.click();
+    source.value='# 深色主题\\n\\n'+Array.from({length:50},(_,i)=>'段落 '+i+' **强调文字** 与 \\x60inline code\\x60。').join('\\n\\n');
+    source.dispatchEvent(new Event('input',{bubbles:true}));mode.click();
+    document.querySelector('[data-action="settings"]').click();
+    const theme=document.querySelector('#settingTheme');theme.value='dark';theme.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#settingsDone').click();
+    for(let i=0;i<100;i++){if(document.querySelector('#wysiwyg h1')&&getComputedStyle(document.documentElement).colorScheme==='dark')break;await new Promise(r=>setTimeout(r,20))}
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  })()`);
+  const screenshot = await command('Page.captureScreenshot', { format: 'png' });
+  await mkdir(new URL('../.test-artifacts/', import.meta.url), { recursive: true });
+  await writeFile(fileURLToPath(new URL(`../.test-artifacts/theme-${initial.installedConfig ? 'packaged' : 'source'}.png`, import.meta.url)), Buffer.from(screenshot.data, 'base64'));
   await writeFile(initial.path, JSON.stringify({ unorderedMarkers: ['🚀', '🌙', '⭐'], orderedStyles: ['decimal', 'lower-alpha'], headingPrefixes: ['', '', '', '', '', ''], quotePrefix: '' }, null, 2), 'utf8');
   await writeFile(initial.cssPath, ':root{--inkdown-h1-prefix:"📝 ";}', 'utf8');
   const reloaded = await evaluate(`(async()=>{
