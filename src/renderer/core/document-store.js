@@ -108,9 +108,24 @@ export function saveSettings(settings) {
 }
 
 export function loadRecentFiles() {
-  try { return JSON.parse(localStorage.getItem('inkdown.recent') || '[]'); }
+  try { return normalizeRecentFiles(JSON.parse(localStorage.getItem('inkdown.recent') || '[]')); }
   catch { return []; }
 }
+
+export function normalizeRecentFiles(value) {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set();
+  return value.filter(file => {
+    if (!file || typeof file.path !== 'string' || !file.path.trim()) return false;
+    const key = file.path.replaceAll('\\', '/').toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  }).slice(0, 12).map(file => ({ path: file.path,
+    name: typeof file.name === 'string' && file.name ? file.name : file.path.split(/[\\/]/).at(-1),
+    openedAt: Number.isFinite(file.openedAt) ? file.openedAt : 0 }));
+}
+
+export function clearRecentFiles() { localStorage.removeItem('inkdown.recent'); }
 
 export function addRecentFile(file) {
   if (!file?.path) return loadRecentFiles();
