@@ -29,12 +29,21 @@ class WorkspaceSearchService {
     const cached = this.catalogs.get(folderPath);
     if (cached?.pending) return cached.pending;
     if (cached?.files && cached.expires > this.now()) return cached.files;
-    const pending = Promise.resolve().then(loader).then(
-      files => this.primeCatalog(folderPath, files),
-      error => { this.catalogs.delete(folderPath); throw error; }
+    const entry = { files: cached?.files || null, expires: 0, pending: null };
+    entry.pending = Promise.resolve().then(loader).then(
+      files => {
+        const snapshot = Array.isArray(files) ? [...files] : [];
+        // Only this still-current read may publish; invalidation/priming supersedes it.
+        if (this.catalogs.get(folderPath) === entry) this.primeCatalog(folderPath, snapshot);
+        return snapshot;
+      },
+      error => {
+        if (this.catalogs.get(folderPath) === entry) this.catalogs.delete(folderPath);
+        throw error;
+      }
     );
-    this.catalogs.set(folderPath, { files: cached?.files || null, expires: 0, pending });
-    return pending;
+    this.catalogs.set(folderPath, entry);
+    return entry.pending;
   }
 
   async searchFolder(folderPath, query, requestId, loader) {
