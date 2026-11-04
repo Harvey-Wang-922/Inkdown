@@ -32,6 +32,8 @@ This document records development state and limitations, not application version
 - Source editing, list/table semantics, normal opening, manual save serialization and bounded session restoration have dedicated models/coordinators.
 - Recovery uses debounced, ordered atomic IndexedDB writes and conditional legacy migration. Normal close waits for startup restoration and final recovery writing; stale close acknowledgements are rejected.
 - Document file saving remains manual-only. Removed autosave and typewriter settings cannot be re-enabled by loading old preferences.
-- Find/search models own match navigation and stale-re.
+- Find/search models own match navigation and stale-result cancellation. Workspace search targets saved files and validates content before opening exact source offsets.
+- Search directory catalog requests own their cache entry; invalidation or replacement prevents obsolete success/error from publishing or deleting the newer cache.
+- File menu Open Recent dynamically reuses the welcome-screen recent metadata, with bounded/deduplicated entries, full-path tooltips, submenu keyboard navigation, empty/malformed storage handling and viewport boundaries. Opening uses.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
