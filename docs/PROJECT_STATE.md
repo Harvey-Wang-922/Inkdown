@@ -21,13 +21,12 @@ This document records development state and limitations, not application version
 - Current search-cache verification reproduced an old directory enumeration overwriting a newer catalog after invalidation. Publication and error cleanup now require request-entry identity. Deterministic regressions cover late success, late failure, explicit priming, global invalidation and normal failure/retry; overlapping queries still share the current enumeration. Old callers retain their own result/error, with renderer query/navigation cancellation unchanged.
 - After the catalog repair, all eleven core suites, 70 syntax checks and twelve source/packaged CDP suites passed. Real source/packaged PDF and DOCX checks, actual packaged resources, 46-file runtime/ASAR parity and hardened fuses were verified. The final task-list diagnostics also passed a targeted source rerun; custom CSS/JSON hashes match the pre-build backup. Production/full audit results are stated separately below.
 - The current production audit reports zero known advisories; the full audit reports one moderate development-only minimatch advisory in build-tool chains. Its published fix requires a new major; no blanket incompatible override or ignore rule was added. See SECURITY_REVIEW.md. Earlier clean-audit results below are historical, not the current full-audit status.
-- In the current packaged run, task-list projection retained checkboxes/canonical structure but the test's inserted exclamation mark was absent. Input-state/execCommand diagnostics were added without changing production editing code, waits or assertions; the isolated packaged list suite and I-guide-only changes do not require an installer rebuild. Such checks must not be reported as a new packaged release verification.
+- In the current packaged run, task-list projection retained checkboxes/canonical structure but the test's inserted exclamation mark was absent. Input-state/execCommand diagnostics were added without changing production editing code, waits or assertions; the isolated packaged list suite and complete fresh-profile packaged run then passed. This failure's cause remains unestablished, not fixed by the directory-cache repair.
 
-## Remaining architectural work
+## Implemented boundaries
 
-1. Extend source-range coverage beyond ordinary top-level blocks. Custom/raw/reference projections still use whole-DOM compatibility conversion; a changed large list/table still converts the full block.
-2. Replace linear document fingerprint scans with trustworthy dirty-block tracking; implement general source/AST caret mapping.
-3. Add input-intent handling during large async projections; input attempted during loading is not yet queued.
+- doc.content is authoritative Markdown for saving, history, recovery and export. No untouched DOM serialization is performed during tab/mode switching or saving.
+- Ordinary visual projections have verified top-level source spans. Changed blocks patch source while preserving untouched neighboring bytes; detached partial paste uses the same boundaryent handling during large async projections; input attempted during loading is not yet queued.
 4. Further separate substantial UI/session/command orchestration from app.js.
 5. Budget recovery snapshot/structured-clone CPU costs. Forced termination or unexpected OS shutdown can still lose recent private recovery data.
 6. Introduce main-issued filesystem capabilities; trusted path-based IPC is not a capability boundary against a compromised renderer.
