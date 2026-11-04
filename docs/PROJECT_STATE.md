@@ -61,6 +61,20 @@ This document records development state and limitations, not application version
 - Recent-file menu changes passed all eleven core suites and twelve source/packaged CDP suites, including dynamic entries, text-only names, existing-tab reuse, missing-file feedback and clear/empty behavior. Syntax, both audits, packaged resource policy, 44-file source/ASAR parity, fuses, real DOCX/PDF checks and unchanged user configurations were verified. The installer remains unsigned; no new general source/AST preservation claim is made.
 
 - Completed source/packaged checks include startup/native input, nested lists, tables, search, clipboard, undo/redo viewport, manual saves, recovery close/restart and shell-open behavior.
-- Eleven core suites, script.
+- Eleven core suites, script syntax checks, both dependency audits, DOCX roundtrip, real PDF security, resource policy, source/ASAR parity and fuses were previously verified. These results are time- and artifact-specific, not perpetual guarantees.
+- Some runs observed fixed-delay/native input failures; isolated and complete fresh-profile reruns passed unchanged. Causes were not established and thresholds were not relaxed. Test readiness/focus timing remains debt.
+- Documentation and AI-guide-only changes do not require an installer rebuild. Such checks must not be reported as a new packaged release verification.
+
+## Remaining architectural work
+
+1. Extend source-range coverage beyond ordinary top-level blocks. Custom/raw/reference projections still use whole-DOM compatibility conversion; a changed large list/table still converts the full block.
+2. Replace linear document fingerprint scans with trustworthy dirty-block tracking; implement general source/AST caret mapping.
+3. Add input-intent handling during large async projections; input attempted during loading is not yet queued.
+4. Further separate substantial UI/session/command orchestration from app.js.
+5. Budget recovery snapshot/structured-clone CPU costs. Forced termination or unexpected OS shutdown can still lose recent private recovery data.
+6. Introduce main-issued filesystem capabilities; trusted path-based IPC is not a capability boundary against a compromised renderer.
+7. Map arbitrary source search locations back into visual projections and support exported custom styles.
+8. Generate shortcut documentation from the canonical command registry.
+9. History grouping currently computes a linear minimal source difference. Repeated identical text can make the inferred edit range ambiguous; it is not a general source/caret mapping or input-intent model.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
