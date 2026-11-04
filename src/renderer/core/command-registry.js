@@ -1,5 +1,6 @@
 const baseCommands = [
   ['new', '新建', 'Ctrl+N', true], ['open', '打开/导入文件…', 'Ctrl+O', true], ['folder', '打开文件夹…', 'Ctrl+Shift+O', true],
+  ['recent-files', '打开最近文件'], ['open-recent', '打开最近文件'], ['clear-recent', '清空最近文件记录'],
   ['quick-open', '快速打开…', 'Ctrl+P'], ['command-palette', '命令面板…', 'Ctrl+Shift+P'], ['reopen-closed', '重新打开关闭的文件', 'Ctrl+Shift+T'],
   ['save', '保存', 'Ctrl+S', true], ['save-as', '另存为…', 'Ctrl+Shift+S', true], ['close', '关闭标签', 'Ctrl+W'],
   ['export-markdown', '导出 Markdown…', '', true], ['export-text', '导出纯文本…', '', true], ['export-html', '导出 HTML 网页…', '', true],
