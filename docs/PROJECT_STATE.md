@@ -1,6 +1,6 @@
 # Inkdown project state
 
-Updated: 2026-10-14
+Updated: 2026-11-04
 
 This document records development state and limitations, not application version numbers or version-numbered release history. Runtime release metadata remains in package.json; exact artifact paths and hashes belong in the actual build handoff.
 
