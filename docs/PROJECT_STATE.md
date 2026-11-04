@@ -8,13 +8,9 @@ This document records development state and limitations, not application version
 
 - The latest requested rebuild completed from current source. Earlier batch directory clearing was rejected before running; it was not retried or bypassed. The rebuild generated its target installer without clearing unrelated historical artifacts.
 - Existing custom.css and markdown-style.json were independently backed up under .build-backups/, restored after building and verified byte-identical after regression runs.
-- Eleven core suites, 70 script syntax checks and all twelve source/packaged CDP suites passed. Bt verify a future rebuild. Run the release checklist again for the actual new artifact.
-- The previously inspected application and installer were unsigned. No signing certificate/provider or internal scanner verdict was supplied; enterprise approval is unknown.
-
-## Implemented boundaries
-
-- doc.content is authoritative Markdown for saving, history, recovery and export. No untouched DOM serialization is performed during tab/mode switching or saving.
-- Ordinary visual projections have verified top-level source spans. Changed blocks patch source while preserving untouched neighboring bytes; detached partial paste uses the same boundary.
+- Eleven core suites, 70 script syntax checks and all twelve source/packaged CDP suites passed. Both dependency audits, real source/packaged DOCX/PDF checks, packaged resource policy, 46 runtime-file ASAR parity and hardened fuses were verified.
+- A historical source list run failed its tab reprojection assertion; isolated and full fresh-profile reruns passed unchanged. No assertions or thresholds were relaxed; the cause remains unestablished. The latest history/dependency rebuild passed complete source and packaged suites without that failure.
+- The installer is unsigned. No signing certificate/provide spans. Changed blocks patch source while preserving untouched neighboring bytes; detached partial paste uses the same boundary.
 - EditorProjectionController owns installation, normalization, span capture and view activation. ProjectionCoordinator binds epoch, document id, source revision and editor mode, including stale success/error/cleanup protection.
 - History stores source-only strings. Transient block-relative caret and pane/textarea scroll restoration prevent unconditional document-end placement during undo/redo.
 - Source editing, list/table semantics, normal opening, manual save serialization and bounded session restoration have dedicated models/coordinators.
