@@ -1,4 +1,4 @@
-import { DocumentStore, defaultSettings, loadSettings, saveSettings, loadRecentFiles, addRecentFile } from './core/document-store.js';
+import { DocumentStore, defaultSettings, loadSettings, saveSettings, loadRecentFiles, addRecentFile, clearRecentFiles } from './core/document-store.js';
 import { MarkdownInputController } from './core/markdown-input.js';
 import { SourceDocumentEngine } from './core/source-document-engine.mjs';
 import { DocumentHistory } from './core/document-history.js';
@@ -11,7 +11,7 @@ import { DocumentSaveCoordinator } from './core/document-save-coordinator.js';
 import { compileMarkdownStyle, DEFAULT_MARKDOWN_STYLE } from './core/markdown-style-config.js';
 import { ProjectionCoordinator } from './core/projection-coordinator.js';
 import { EditorProjectionController } from './core/editor-projection-controller.mjs';
-import { commandPaletteItems, resolveKeyboardAction } from './core/command-registry.js';
+import { commandPaletteItems, resolveKeyboardAction, commandItem } from './core/command-registry.js';
 import { SessionRestoreCoordinator } from './core/session-restore-coordinator.js';
 import { EditorFindController, replaceTextRanges } from './core/find-controller.js';
 import { filterWorkspaceTree, WorkspaceSearchCoordinator } from './core/workspace-search-model.js';
@@ -22,6 +22,7 @@ import { placeFloatingToolbar } from './core/floating-toolbar-layout.mjs';
 import { SourceEditingController } from './core/source-editing-model.mjs';
 import { VisualSourceTransactions } from './core/visual-source-transactions.mjs';
 import { SessionRecoveryStorage, SessionRecoveryCoordinator } from './core/session-recovery-storage.mjs';
+import { ThemeController } from './core/theme-controller.mjs';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -75,6 +76,11 @@ const els = {
 };
 
 let appMenu;
+const themeController = new ThemeController({
+  root: document.documentElement, body: document.body,
+  setNativeTheme: theme => window.inkdown.setTheme(theme),
+  onError: error => toast(`主题同步失败：${error.message}`)
+});
 const sourceEditing = new SourceEditingController(els.source, sourceChanged);
 const findController = new EditorFindController({ source: els.source, visual: els.wysiwyg, pane: els.pane, isSourceMode: () => state.sourceMode });
 const workspaceSearch = new WorkspaceSearchCoordinator((folderPath, query, requestId) => window.inkdown.searchFolder(folderPath, query, requestId));
@@ -654,7 +660,7 @@ function executeTableAction(action) {
   return inputController.executeTableCommand(command);
 }
 
-async function executeAction(action) {
+async function executeAction(action, value) {
   if (document.body.inert) return;
   const doc = activeDoc();
   if (action.startsWith('table-')) return executeTableAction(action);
@@ -662,6 +668,8 @@ async function executeAction(action) {
   switch (action) {
     case 'new': return createDocument();
     case 'open': return openFiles();
+    case 'open-recent': return typeof value === 'string' ? openPath(value) : undefined;
+    case 'clear-recent': clearRecentFiles(); renderRecentFiles(); return;
     case 'folder': return openFolder();
     case 'save': return saveDocument();
     case 'save-as': return saveDocument(doc, true);
@@ -893,8 +901,7 @@ function readSettingsForm() {
 }
 
 async function applySettings() {
-  let theme = state.settings.theme; if (theme === 'system') theme = await window.inkdown.getSystemTheme();
-  document.body.classList.remove('theme-dark', 'theme-sepia'); if (theme === 'dark') document.body.classList.add('theme-dark'); if (theme === 'sepia') document.body.classList.add('theme-sepia');
+  void themeController.apply(state.settings.theme);
   const fonts = { system: '"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif', serif: 'Georgia,"Noto Serif SC","Songti SC",serif', mono: '"Cascadia Code","Cascadia Mono",Consolas,monospace' };
   document.documentElement.style.setProperty('--editor-font', fonts[state.settings.fontFamily]); document.documentElement.style.setProperty('--editor-size', `${state.settings.fontSize}px`); document.documentElement.style.setProperty('--editor-line', state.settings.lineHeight); document.documentElement.style.setProperty('--content-width', `${state.settings.contentWidth}px`);
   els.wysiwyg.spellcheck = state.settings.spellcheck; document.body.classList.toggle('hide-status', !state.settings.showStatusBar);
@@ -1007,7 +1014,11 @@ function bindUi() {
     event.preventDefault();
     void pasteSourceClipboard(event.clipboardData.getData('text/plain'), event.clipboardData.getData('text/html'));
   });
-  appMenu = new AppMenu(els.appMenuBar, executeAction);
+  appMenu = new AppMenu(els.appMenuBar, executeAction, () => {
+    const recent = loadRecentFiles();
+    return recent.length ? [...recent.map(file => ({ action: 'open-recent', label: file.name, title: file.path, value: file.path })),
+      null, commandItem('clear-recent')] : [{ label: '暂无最近文件', disabled: true }];
+  });
   $('#newBtn').onclick = $('#welcomeNew').onclick = () => executeAction('new');
   $('#welcomeOpen').onclick = () => executeAction('open');
   $('#welcomeFolder').onclick = $('#openFolderSideBtn').onclick = () => executeAction('folder');
@@ -1072,6 +1083,7 @@ function bindKeyboard() {
 }
 
 async function boot() {
+  window.inkdown.onSystemThemeChanged(() => { void themeController.refreshSystem(); });
   bindUi(); bindKeyboard(); void applySettings(); setSidebarMode(state.settings.sidebarMode || 'files'); renderRecentFiles();
   let closeGeneration = null;
   window.inkdown.onRecoveryFlushRequested(async generation => {
