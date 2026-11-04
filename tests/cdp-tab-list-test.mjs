@@ -212,9 +212,10 @@ const taskProjection = await evaluate(`(async()=>{
   if(source.classList.contains('hidden')){button.click();await new Promise(r=>setTimeout(r,90));}
   document.querySelector('#newBtn').click();await new Promise(r=>setTimeout(r,100));source.value='- [ ] task\\n- [x] done';source.dispatchEvent(new Event('input',{bubbles:true}));button.click();await new Promise(r=>setTimeout(r,140));
   const first=editor.querySelector(':scope > ul > li'),content=first?.querySelector(':scope > [data-list-content]'),canonical=Boolean(first?.querySelector(':scope > input[type="checkbox"]')&&content&&!first.querySelector(':scope > [data-list-content] input'));
-  if(content){editor.focus();const r=document.createRange();r.selectNodeContents(content);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('insertText',false,'!');}
+  const inputState={editable:editor.isContentEditable,paneClass:document.querySelector('#editorPane')?.className,attributes:editor.getAttribute('contenteditable')};
+  if(content){editor.focus();const r=document.createRange();r.selectNodeContents(content);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);inputState.inserted=document.execCommand('insertText',false,'!');inputState.after=content.textContent;}
   await new Promise(r=>setTimeout(r,40));button.click();await new Promise(r=>setTimeout(r,100));const value=source.value;button.click();await new Promise(r=>setTimeout(r,100));
-  return {ok:canonical&&/\\[ \\]\\s*task!/.test(value)&&/\\[x\\]\\s*done/i.test(value),canonical,value,html:editor.innerHTML};
+  return {ok:canonical&&/\\[ \\]\\s*task!/.test(value)&&/\\[x\\]\\s*done/i.test(value),canonical,value,html:editor.innerHTML,inputState};
 })()`);
 if (!taskProjection.ok) throw new Error('真实 Markdown 任务列表投影后丢失了 checkbox 或任务标记：'+JSON.stringify(taskProjection));
 result.taskProjection = true;
