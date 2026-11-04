@@ -40,6 +40,9 @@ This document records development state and limitations, not application version
 
 ## Installation, resources and security
 
-- Assisted NSIS pr.
+- Assisted NSIS preserves installation-directory selection and explicit optional Markdown association. Installation does not open Windows Settings automatically, bypass UserChoice or kill every application process.
+- Packaging retains English and both Chinese locale packs. Development tooling/fixtures, maps/types and confirmed unused duplicate browser builds are excluded.
+- Runtime entry points, licenses, ICU, graphics/software-rendering compatibility and Word/PDF support are retained.
+- Custom configuration creation uses wx.
 
 The full architecture and verification commands remain in docs/ARCHITECTURE.md and AGENTS.md. Existing source-mapping, conversion and storage limitations must not be described as entirely solved.
